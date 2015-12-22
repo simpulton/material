@@ -2,13 +2,13 @@ $slider-background-color:  rgb(200, 200, 200) !default;
 $slider-height:  48px !default;
 
 $slider-track-height:  2px !default;
-$slider-thumb-width:  32px !default;
+$slider-thumb-width:  26px !default;
 $slider-thumb-height:  $slider-thumb-width !default;
 
 $slider-thumb-default-scale: 0.5 !default;
-$slider-thumb-hover-scale: 0.6 !default;
-$slider-thumb-focus-scale: 0.85 !default;
-$slider-thumb-disabled-scale: 0.35 !default;
+$slider-thumb-hover-scale: 0.73 !default;
+$slider-thumb-focus-scale: 0.73 !default;
+$slider-thumb-disabled-scale: 0.29 !default;
 $slider-thumb-disabled-border: 6px !default;
 
 $slider-focus-thumb-width:  48px !default;
@@ -49,16 +49,22 @@ md-slider {
 
   height: $slider-height;
   position: relative;
-  display: block;
   margin-left: 4px;
   margin-right: 4px;
   padding: 0;
+  justify-content: center;
+  display: flex;
 
   *, *:after {
     box-sizing: border-box;
   }
 
   .md-slider-wrapper {
+    outline: none;
+    width: 100%;
+  }
+
+  .md-slider-content {
     position: relative;
   }
 
@@ -78,7 +84,8 @@ md-slider {
     height: 100%;
   }
   .md-track-fill {
-    transition: width 0.05s linear;
+    transition: all .4s cubic-bezier(.25,.8,.25,1);
+    transition-property: width, height;
   }
   .md-track-ticks {
     position: absolute;
@@ -101,7 +108,8 @@ md-slider {
     left: 0;
     top: 50%;
     transform: translate3d(-50%,-50%,0);
-    transition: left 0.1s linear;
+    transition: all .4s cubic-bezier(.25,.8,.25,1);
+    transition-property: left, bottom;
   }
   .md-thumb {
     z-index: 1;
@@ -123,10 +131,11 @@ md-slider {
       border-radius: max($slider-thumb-width, $slider-thumb-height);
       border-width: 3px;
       border-style: solid;
+      transition: inherit;
     }
 
     transform: scale($slider-thumb-default-scale);
-    transition: all 0.1s linear;
+    transition: all .4s cubic-bezier(.25,.8,.25,1);
   }
 
   /* The sign that's focused in discrete mode */
@@ -144,7 +153,7 @@ md-slider {
     height: $slider-sign-height;
     border-radius: max($slider-sign-height, $slider-sign-width);
 
-    transform: scale(0.4) translate3d(0,(-$slider-sign-top + 8) / 0.4,0);
+    transform: scale(0.4) translate3d(0,(-$slider-sign-top + 10) / 0.4,0);
     transition: all 0.2s ease-in-out;
 
     /* The arrow pointing down under the sign */
@@ -199,11 +208,6 @@ md-slider {
   }
 
   &.md-min {
-    .md-thumb {
-      &:after {
-        background-color: white;
-      }
-    }
     .md-sign {
       opacity: 0;
     }
@@ -229,13 +233,13 @@ md-slider {
     }
 
     &:not([disabled]) {
-      &:hover {
-        .md-thumb {
+      .md-slider-wrapper {
+        .md-thumb:hover {
           transform: scale($slider-thumb-hover-scale);
         }
       }
 
-      &:focus,
+      .md-slider-wrapper:focus,
       &.md-active {
         .md-focus-thumb {
           display: block;
@@ -258,13 +262,28 @@ md-slider {
     }
 
     &:not([disabled]) {
-      &:focus,
+      .md-slider-wrapper:focus,
       &.md-active {
+        .md-thumb {
+          transform-origin: center top;
+          transform: scale(0);
+        }
         .md-sign,
         .md-sign:after {
           opacity: 1;
           transform: translate3d(0,0,0) scale(1.0);
         }
+      }
+    }
+
+    &[readonly] {
+      .md-thumb {
+        transform: scale(0);
+      }
+      .md-sign,
+      .md-sign:after {
+        opacity: 1;
+        transform: translate3d(0,0,0) scale(1.0);
       }
     }
   }
@@ -273,14 +292,103 @@ md-slider {
     .md-track-fill {
       display: none;
     }
-    .md-sign {
-      display: none;
+    &:not([readonly]) .md-sign {
+      opacity: 0;
     }
     .md-thumb {
       transform: scale($slider-thumb-disabled-scale);
     }
     .md-disabled-thumb {
       display: block;
+    }
+  }
+
+  &[md-vertical] {
+    height: auto;
+    flex-direction: column;
+    min-height: 128px;
+
+    .md-slider-wrapper {
+      flex: 1;
+      height: 100%;
+      padding-top: 12px;
+      padding-bottom: 12px;
+      width: $slider-height;
+      align-self: center;
+      display: flex;
+      justify-content: center;
+    }
+
+    .md-track-container {
+      height: 100%;
+      width: $slider-track-height;
+      top: 0;
+      left: 50%;
+    }
+
+    .md-thumb-container {
+      top: auto;
+      margin-bottom: ($slider-height / 2) - ($slider-track-height) / 2;
+      left: 50%;
+      bottom: 0;
+
+      .md-thumb:after {
+        left: 4px;
+      }
+    }
+
+    .md-track-fill {
+      bottom: 0;
+    }
+
+    &[md-discrete] {
+      .md-sign {
+        left: -$slider-sign-height - 14;
+        top: -($slider-sign-top / 2) + 1;
+
+        transform: scale(0.4) translate3d((-$slider-sign-top + 10) / 0.4, 0 ,0);
+
+        /* The arrow pointing left next the sign */
+        &:after {
+          top: 0;
+          left: 19px;
+          border-top: $slider-arrow-width / 2 solid transparent;
+          border-right: 0;
+          border-bottom: $slider-arrow-width / 2 solid transparent;
+          border-left-width: $slider-arrow-height;
+          border-left-style: solid;
+
+          opacity: 0;
+          transform: translate3d(0,-8px,0);
+          transition: all 0.2s ease-in-out;
+        }
+
+        .md-thumb-text {
+          z-index: 1;
+          font-size: 12px;
+          font-weight: bold;
+        }
+      }
+
+      &:not([disabled]) {
+        .md-slider-wrapper:focus,
+        &.md-active {
+          .md-thumb {
+            transform-origin: left center;
+          }
+        }
+      }
+    }
+
+    &[readonly] {
+      .md-thumb {
+        transform: scale(0);
+      }
+      .md-sign,
+      .md-sign:after {
+        opacity: 1;
+        transform: translate3d(0,0,0) scale(1.0);
+      }
     }
   }
 }
